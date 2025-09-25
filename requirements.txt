@@ -1,0 +1,10 @@
+streamlit
+pandas
+sqlalchemy
+pymysql
+openai
+python-dotenv
+pillow
+bcrypt
+streamlit-mic-recorder
+pydeck
