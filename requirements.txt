@@ -8,3 +8,7 @@ pillow
 bcrypt
 streamlit-mic-recorder
 pydeck
+requests
+pydantic
+reportlab
+fpdf2
