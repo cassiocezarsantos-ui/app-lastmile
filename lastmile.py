@@ -477,7 +477,8 @@ def ss_init():
         "catalogo_produtos":[],
         "no_estoque": False,
         "visit_just_finalized": False,
-        "manual_order_items": []
+        "manual_order_items": [],
+        "audio_to_play": None # <-- ATUALIZADO
     }
     for k,v in preset.items(): st.session_state.setdefault(k,v)
 ss_init()
@@ -1262,8 +1263,8 @@ def generate_combined_checklist():
                        "Gere um checklist final (passos curtos e acionáveis, na ordem de execução) "
                        "apenas para os nossos itens (se fornecidos), cobrindo reposição, facing, eye-level, blocagem e preço visível.")
             r = client.chat.completions.create(model="gpt-4o-mini", temperature=0.2, max_tokens=900,
-                                               messages=[{"role":"system","content":"Você é um consultor de execução em PDV."},
-                                                         {"role":"user","content":content}])
+                                                messages=[{"role":"system","content":"Você é um consultor de execução em PDV."},
+                                                          {"role":"user","content":content}])
             txt = (r.choices[0].message.content or "").strip()
         except Exception as e:
             txt = f"(Falha ao gerar checklist com IA: {e})"
@@ -1293,9 +1294,20 @@ def screen_guided():
     st.progress(idx/total if total else 0, text=f"Etapa {idx+1} de {total}")
     st.markdown(f"**Passo atual:** {atual}")
 
+    # --- INÍCIO DA ATUALIZAÇÃO ---
+    audio_placeholder = st.empty()
+
+    if st.session_state.audio_to_play:
+        audio_placeholder.audio(st.session_state.audio_to_play['bytes'], format=st.session_state.audio_to_play['mime'])
+        st.session_state.audio_to_play = None
+
     if st.button("🔊 Ouvir instrução", use_container_width=True):
-        audio_bytes, mime = tts_bytes(atual)
-        if audio_bytes: st.audio(audio_bytes, format=mime)
+        with st.spinner("Gerando áudio..."):
+            audio_bytes, mime = tts_bytes(atual)
+            if audio_bytes:
+                st.session_state.audio_to_play = {"bytes": audio_bytes, "mime": mime}
+                st.rerun()
+    # --- FIM DA ATUALIZAÇÃO ---
 
     st.markdown("Confirme (ex.: 'ok', 'feito') ou registre observação:")
     saida_txt = st.text_input("", key=f"txt_{idx}")
@@ -1351,8 +1363,8 @@ def analyze_final_gondola(before: List[Image.Image], after: Image.Image):
     content.append({"type":"image_url","image_url":{"url":image_to_b64_url(after)}})
     try:
         r = client.chat.completions.create(model="gpt-4o-mini", temperature=0.2, max_tokens=650,
-                                           messages=[{"role":"system","content":"Auditor PDV objetivo."},
-                                                     {"role":"user","content":content}])
+                                        messages=[{"role":"system","content":"Auditor PDV objetivo."},
+                                                  {"role":"user","content":content}])
         txt=(r.choices[0].message.content or "").strip()
     except Exception as e:
         txt=f"Falha IA: {e}"
@@ -1863,13 +1875,13 @@ if scr == "login" and st.session_state.get("auth"):
 
 if scr=="login":        screen_login()
 elif scr=="home":       screen_home()
-elif scr=="gondola":    screen_gondola()
-elif scr=="estoque":    screen_estoque()
-elif scr=="guided":     screen_guided()
-elif scr=="audit_final":screen_audit_final()
-elif scr=="pedidos":    screen_pedidos()
-elif scr=="consulta":   screen_consulta_visitas()
-elif scr=="reports":    screen_reports()
-elif scr=="dashboard":  screen_dashboard()
-elif scr=="admin":      screen_admin()
+elif scr=="gondola":     screen_gondola()
+elif scr=="estoque":     screen_estoque()
+elif scr=="guided":      screen_guided()
+elif scr=="audit_final": screen_audit_final()
+elif scr=="pedidos":     screen_pedidos()
+elif scr=="consulta":    screen_consulta_visitas()
+elif scr=="reports":     screen_reports()
+elif scr=="dashboard":   screen_dashboard()
+elif scr=="admin":       screen_admin()
 else:                   screen_login()
