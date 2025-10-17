@@ -82,8 +82,8 @@ def validate_payload(payload: dict) -> Optional[str]:
 from urllib.parse import quote_plus, quote
 from sqlalchemy import create_engine, text
 
-MYSQL_HOST = os.getenv("MYSQL_HOST", "10.40.13.6")
-MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
+MYSQL_HOST = os.getenv("MYSQL_HOST", "170.231.15.17")
+MYSQL_PORT = int(os.getenv("MYSQL_PORT", "33306"))
 MYSQL_USER = os.getenv("MYSQL_USER", "cassio")
 MYSQL_PWD_PLAIN = os.getenv("MYSQL_PASSWORD", "")
 MYSQL_PWD = quote_plus(MYSQL_PWD_PLAIN)
